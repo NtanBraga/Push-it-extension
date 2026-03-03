@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "chrome-types": "^0.1.420",
-    "vue": "^3.5.25"
+    "vue": "^3.5.25",
+    "vue-konva": "^3.3.0"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
