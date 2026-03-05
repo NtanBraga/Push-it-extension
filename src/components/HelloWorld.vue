@@ -1,41 +1,68 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import iro from '@jaames/iro'
 
-defineProps<{ msg: string }>()
+const color = ref("#fef08a");
+const selectedFont = ref("Inter");
 
-const count = ref(0)
+onMounted(() => {
+  const colorPicker = new (iro as any).ColorPicker("#picker", {
+    width: 180,
+    color: color.value,
+    layout: [
+      {
+        component: (iro as any).ui.Wheel,
+        options: { borderColor: '#ffffff', borderWidth: 2 }
+      },
+    ]
+  });
+  colorPicker.on('color:change', (newColor: any) => {
+    color.value = newColor.hexString;
+  });
+});
+
 </script>
 
 <template>
-  <h1>{{ msg }}</h1>
 
-  <div class="card">
-    <button type="button" @click="count++">count is {{ count }}</button>
-    <p>
-      Edit
-      <code>components/HelloWorld.vue</code> to test HMR
-    </p>
+<div class="extension-container">
+  
+  <div class="font-selector-container">
+    <label class="font-label ">Estilo da fonte</label>
+    <select v-model="selectedFont" class="font-dropdown">
+      <option style="font-family: 'Gochi Hand', cursive;">Caligrafia</option>
+      <option style="font-family: 'Inter', sans-serif;">Padrão Moderno</option>
+      <option style="font-family: 'Courier New', monospace;">Máquina de Escrever</option>
+      <option style="font-family: 'Permanent Marker', cursive;">Pincel Atômico</option>
+    </select>
+
+    <div class="picker-section">
+      <div id="picker"></div> <div class="hex-display">
+        {{ color }}
+      </div>
+    </div>
   </div>
 
-  <p>
-    Check out
-    <a href="https://vuejs.org/guide/quick-start.html#local" target="_blank"
-      >create-vue</a
-    >, the official Vue + Vite starter
-  </p>
-  <p>
-    Learn more about IDE Support for Vue in the
-    <a
-      href="https://vuejs.org/guide/scaling-up/tooling.html#ide-support"
-      target="_blank"
-      >Vue Docs Scaling up Guide</a
-    >.
-  </p>
-  <p class="read-the-docs">Click on the Vite and Vue logos to learn more</p>
+
+  <button class="btn-create">
+    +Criar Sticknote
+  </button>
+
+
+    <div class="footer-nav">
+      <div class="workspace-group">
+        <button class="btn-workspace">
+          <span>🏠</span> Home
+        </button>
+        <button class="btn-add-workspace">+</button>
+      </div>
+
+      <button class="btn-settings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+</div>
 </template>
 
 <style scoped>
-.read-the-docs {
-  color: #888;
-}
 </style>
