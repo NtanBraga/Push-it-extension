@@ -13,6 +13,7 @@ export const EditText = defineComponent({
         y: { type: Number, required: true},
         text: { type: String, default: ''},
         fontColour: { type: String, default: 'black'},
+        fontFamily: { type: String, default: 'sans-serif'},
         width: { type: Number, required: true },
         height: { type: Number, required: true},
         isEditing: { type: Boolean, required: true},
@@ -38,6 +39,7 @@ export const EditText = defineComponent({
                         y={props.y}
                         width={props.width}
                         height={props.height}
+                        fontFamily={props.fontFamily}
                         value={props.text}
                         onChange={handleTextChange}
                         onKeydown={handleEscapeKeys}

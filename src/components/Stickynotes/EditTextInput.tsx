@@ -1,5 +1,5 @@
 import { defineComponent, nextTick, onMounted, ref, type PropType } from 'vue'
-import { Html } from '../vue-konva-util/html.ts'
+import { Html } from '../vue-konva-util/html.tsx'
 
 export const EditTextInput = defineComponent({
     name: 'EditTextInput',
@@ -9,6 +9,7 @@ export const EditTextInput = defineComponent({
         y: { type: Number, required: true},
         width: { type: Number, required: true},
         height: { type: Number, required: true},
+        fontFamily: { type: String, required: true},
         value: { type: String, default: ''},
         onChange: { type: Function as PropType<(val: string) => void>, required: true },
         onKeydown: { type: Function as PropType<(e: KeyboardEvent) => void>, default: () => {}},
@@ -52,7 +53,7 @@ export const EditTextInput = defineComponent({
             resize: 'none',
             color: 'black',
             fontSize: '24px',
-            fontFamily: 'sans-serif',
+            fontFamily: props.fontFamily || 'sans-serif',
             lineHeight: '1.4',
             boxSizing: 'border-box' as const,
             caretColor: 'black',

@@ -2,7 +2,6 @@ import { defineComponent, type PropType, ref, shallowRef, watch } from "vue";
 import { Group, Rect, Transformer } from "vue-konva";
 import { EditText } from "./EditText";
 
-
 export const StickyNote = defineComponent({
     name: 'StickyNote',
 
@@ -10,6 +9,7 @@ export const StickyNote = defineComponent({
         id: { type: [String, Number], required: true },
         text: { type:String, required: true },
         colour: { type: String, default: 'yellow' },
+        fontFamily: { type: String, default: 'sans-serif'},
         fontColour: { type: String, default: 'black' },
         x: { type: Number, required: true },
         y: { type: Number, required: true },
@@ -142,6 +142,7 @@ export const StickyNote = defineComponent({
                         width={props.width}
                         height={props.height + 40}
                         text={props.text}
+                        fontFamily={props.fontFamily}
                         fontColour={props.fontColour}
                         isEditing={isEditing.value}
                         onToggleEdit={toggleEdit}

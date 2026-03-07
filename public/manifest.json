@@ -6,7 +6,7 @@
         "default_popup": "index.html"
     },
     "permissions": [
-        "scripting"
+        "activeTab", "scripting", "storage"
     ],
     "host_permissions": [
         "<all_urls>"
@@ -15,5 +15,17 @@
         "16":"favicon-96x96.png",
         "48":"favicon-96x96.png",
         "128":"favicon-96x96.png"
-    }
+    },
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["loader.js"]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": ["assets/*"],
+            "matches": ["<all_urls>"]
+        }
+    ]
 }

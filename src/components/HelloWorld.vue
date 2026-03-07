@@ -2,8 +2,31 @@
 import { onMounted, ref } from 'vue'
 import iro from '@jaames/iro'
 
+
 const color = ref("#fef08a");
 const selectedFont = ref("Inter");
+
+const createSticky = async() => {
+  const [page] = await chrome.tabs.query({ active: true, currentWindow: true});
+
+  if(page?.id) {
+    chrome.tabs.sendMessage(page.id, {
+      action: "ADD_NOTE",
+      data: {
+        id: Date.now().toString(),
+        x: 20,
+        y:20,
+        width: 250,
+        height: 230,
+        text: "Inserir texto",
+        selected: false,
+        colour: color.value,
+        font: selectedFont.value,
+
+      }
+    })
+  }
+}
 
 onMounted(() => {
   const colorPicker = new (iro as any).ColorPicker("#picker", {
@@ -44,7 +67,7 @@ onMounted(() => {
   </div>
 
 
-  <button class="btn-create">
+  <button @click="createSticky" class="btn-create">
     +Criar Sticknote
   </button>
 
