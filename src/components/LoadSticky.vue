@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { StickyNote } from './Stickynotes/Stickynote';
+import { StickyNote } from './Stickynotes/Stickynote.tsx';
 import { ref, onMounted} from 'vue'
 
 const notes = ref<any[]>([])

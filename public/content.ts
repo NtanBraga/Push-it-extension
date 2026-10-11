@@ -27,7 +27,8 @@ const init = () => {
         height: '100vh',
         overflow: 'hidden',
         pointerEvents : 'none',
-        zIndex: '2147483647'
+        zIndex: '2147483647',
+        display: 'none'
     })
 
     //shadow-dom
@@ -47,6 +48,9 @@ const init = () => {
             width: 100%;
             height: 100%;
         }
+        .konvajs-content, konvajs-content canvas {
+            pointer-events: auto;
+        }
     `
 
     const mount = document.createElement('div')
@@ -58,6 +62,27 @@ const init = () => {
     const app = createApp(LoadSticky);
     app.use(VueKonva);
     app.mount(mount); 
+
+
+    //controle de visibilidade
+
+    const setEnabled = (enabled: boolean) => {
+        host.style.display = enabled ? 'block' : 'none'
+    }
+
+    chrome.storage.local.get({pushItEnabled: true}).then((data) => {
+        setEnabled(data.pushItEnabled as boolean)
+    }).catch((e) => {
+        console.error("Erro ao ler estado: ", e)
+        setEnabled(true)
+    })
+
+    //alterações no popup
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+        if(areaName !== 'local') return
+        if(changes.pushItEnabled) setEnabled(changes.pushItEnabled.newValue === true)
+    })
+
 };
 
 if(document.readyState === 'loading') {

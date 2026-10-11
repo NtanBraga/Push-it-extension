@@ -25,7 +25,7 @@ export const EditText = defineComponent({
         const handleEscapeKeys = (e: KeyboardEvent) => {
             if((e.key === RETURN_KEY && !e.shiftKey) || e.key === ESCAPE_KEY) {
                 e.preventDefault();
-                props.onToggleEdit;
+                props.onToggleEdit();
             }
         }
         const handleTextChange = (newValue: string) => {
