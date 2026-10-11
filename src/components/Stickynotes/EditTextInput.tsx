@@ -1,4 +1,4 @@
-import { defineComponent, nextTick, onMounted, ref, type PropType } from 'vue'
+import { defineComponent, watch, nextTick, ref, type PropType } from 'vue'
 import { Html } from '../vue-konva-util/html.tsx'
 
 export const EditTextInput = defineComponent({
@@ -19,11 +19,18 @@ export const EditTextInput = defineComponent({
     setup(props) {
         const textareaRef = ref<HTMLTextAreaElement | null>(null)
 
-        onMounted(() => {
-            nextTick(() => {
-                textareaRef.value?.focus()
+        //montado depois que o teleport estiver pronto
+        watch(textareaRef, (textarea) => {
+            if(!textarea || !props.autoFocus) return
+            
+            nextTick(() => { 
+                textarea.focus() 
+
+                const length = textarea.value.length
+
+                textarea.setSelectionRange(length, length)
             })
-        })
+        }, {flush: 'post'})
 
         const handleInput = (e: Event) => {
             const target = e.target as HTMLTextAreaElement
@@ -31,6 +38,10 @@ export const EditTextInput = defineComponent({
         }
 
         const handleKeydown = (e: KeyboardEvent) => {
+
+
+            e.stopPropagation()
+
             props.onKeydown(e)
             if(e.key ==='Enter' && !e.shiftKey) {
                 e.preventDefault()

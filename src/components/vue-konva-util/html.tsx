@@ -1,4 +1,4 @@
-import { defineComponent, shallowRef, ref, onMounted, nextTick, watch, h } from "vue"
+import { defineComponent, shallowRef, ref, onMounted, nextTick, watch, h, onUnmounted, Teleport } from "vue"
 import { Group } from "vue-konva"
 
 interface DecomposedTransform {
@@ -17,12 +17,6 @@ export interface HtmlProps {
     parentNodeFunc?: (payload: {stage: any}) => HTMLElement | null | undefined
 }
 
-const needForceStyle = (el: HTMLElement): boolean => {
-    const pos = window.getComputedStyle(el).position;
-    const ok = pos === 'absolute' || pos === 'relative';
-    return !ok;
-};
-
 export const Html = defineComponent({
     name: 'Html',
     props: {
@@ -35,77 +29,76 @@ export const Html = defineComponent({
 
     setup(props, {slots}){
         const groupRef = shallowRef<any>(null)
-        const div = ref<HTMLDivElement>(document.createElement('div'));
+        const ready = ref(false)
+
+        //teleport
+        const div = document.createElement('div');
+        let konvaGroup: any = null
 
         const handleTransform = () => {
-            if(!groupRef.value || !div.value) return;
+            if(!konvaGroup) return
+            
             if(!props.transform) {
-                Object.assign(div.value.style, {
-                    position: '',
-                    zIndex: '',
-                    top: '',
-                    left: '',
-                    transform: '',
-                    transformOrigin: '',
+                const transform = konvaGroup.getAbsoluteTransform()
+                let attrs = transform.decompose() as DecomposedTransform
+
+                if(props.transformFunc) attrs = props.transformFunc(attrs)
+
+                Object.assign(div.style, {
+                    position: 'absolute',
+                    zIndex: '10',
+                    top: '0px',
+                    left: '0px',
+                    transform: `translate(${attrs.x}px, ${attrs.y}px) rotate(${attrs.rotation}deg) scaleX(${attrs.scaleX}) scaleY(${attrs.scaleY})`,
+                    transformOrigin: 'top left',
                 })
-                return;
-            }
-            const tr = groupRef.value.getAbsoluteTransform();
-            let attrs = tr.decompose() as DecomposedTransform;
-
-            if(props.transformFunc) {
-                attrs = props.transformFunc(attrs);
             }
 
-            Object.assign(div.value.style, {
-                position: 'absolute',
-                zIndex: '10',
-                top: '0px',
-                left: '0px',
-                transform: `translate(${attrs.x}px, ${attrs.y}px) rotate(${attrs.rotation}deg) scaleX(${attrs.scaleX}) scaleY(${attrs.scaleY})`,
-                transformOrigin: 'top left',
-            })
+            
 
-            const { style, ...rest } = props.divProps ?? {}
-            if (style) Object.assign(div.value.style, style) 
-            Object.assign(div.value, rest)
+            const { style, ...rest } = props.divProps as Record<string, any>
+            if (style) Object.assign(div.style, style) 
+            Object.assign(div, rest)
         }
 
-        onMounted(() => {
-            if(!groupRef.value) return;
+        onMounted(async () => {
+            await nextTick()
 
-            const stage = groupRef.value.getStage();
-            if(!stage) return;
+            //konva só entrega o node via getNode
+            konvaGroup = groupRef.value?.getNode?.()
 
-            const parent = props.parentNodeFunc ? props.parentNodeFunc({stage}) : stage.container()
+            if(!konvaGroup) return
 
-            if(!parent) return;
+            const stage = konvaGroup.getStage()
+            if(!stage) return
 
-            parent.appendChild(div.value)
+            const parent = props.parentNodeFunc 
+                ? props.parentNodeFunc({ stage })
+                : stage.getContent()
 
-            if(props.transform && needForceStyle(parent)) {
-                parent.style.position = 'relative';
-            }
+            if(!parent) return
 
-            groupRef.value.on('absoluteTransformChange', handleTransform)
+            parent.appendChild(div)
+
+            konvaGroup.on('absoluteTranformChange', handleTransform)
+
             handleTransform()
 
-            return () => {
-                groupRef.value?.off('absoluteTransformChange', handleTransform)
-                div.value?.parentNode?.removeChild(div.value)
-            }
+            ready.value = true
         })
 
         watch(
-            () => [props.divProps, props.transformFunc, props.transform],
+            () => [props.groupProps, props.divProps, props.transformFunc, props.transform],
             () => nextTick(handleTransform),
             {deep: true}
         )
 
-        watch(groupRef, (val) => {
-            if(val) nextTick(handleTransform)
+        onUnmounted(() => {
+            konvaGroup?.off('absoluteTranformChange', handleTransform)
+            div.remove()
         })
-
-        return () => h(Group, { ref: groupRef, ...props.groupProps}, slots.default?.())
+        //teleport para enviar a div do modal para html
+        return () => [h(Group, { ref: groupRef, config: props.groupProps}),
+            ready.value ? h(Teleport as any, { to: div }, slots.default?.()) : null ]
     },
 })

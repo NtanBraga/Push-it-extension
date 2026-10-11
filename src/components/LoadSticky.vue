@@ -25,11 +25,13 @@ onMounted(() => {
     })
 
     window.addEventListener('mousedown', (e) => {
-        const target = e.target as HTMLElement;
+        const path = e.composedPath()
 
-        if(target.tagName !== 'CANVAS' && target.tagName !== 'TEXTAREA') {
-            selectedId.value = null;
-        }
+        const clickedEditorOrCanvas = path.some((element) => 
+            element instanceof HTMLCanvasElement || element instanceof HTMLTextAreaElement
+        )
+
+        if(!clickedEditorOrCanvas) selectedId.value = null
     });
 
     chrome.runtime.onMessage.addListener((message) => {
