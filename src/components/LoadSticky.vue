@@ -5,36 +5,45 @@ import { ref, onMounted} from 'vue'
 const notes = ref<any[]>([])
 const selectedId = ref<string | null>(null);
 
-const stageConfig ={
+const stageConfig = ref({
     width: window.innerWidth,
     height: window.innerHeight,
     style: {
         position: 'fixed',
         top: 0,
         left: 0,
-        pointerEvents: 'none',
-        zIndex:Number.MAX_SAFE_INTEGER
+        zIndex:'2147483647',
     }
-}
-const handleMouseDown = (e: any) => {
-    if(e.target === e.target.getStage()) {
-        selectedId.value = null;
-    }
-}
+})
+
 
 onMounted(() => {
+
+    window.addEventListener('resize', () => {
+        stageConfig.value.width = window.innerWidth;
+        stageConfig.value.height = window.innerHeight;
+    })
+
+    window.addEventListener('mousedown', (e) => {
+        const target = e.target as HTMLElement;
+
+        if(target.tagName !== 'CANVAS' && target.tagName !== 'TEXTAREA') {
+            selectedId.value = null;
+        }
+    });
+
     chrome.runtime.onMessage.addListener((message) => {
         if(message.action === "ADD_NOTE") {
             notes.value.push({ ...message.data, selected: true})
+            selectedId.value = message.data.id;
         }
-        selectedId.value = message.data.id;
     })
 })
 
 </script>
 
 <template>
-    <v-stage :config="stageConfig" @mousedown="handleMouseDown">
+    <v-stage :config="stageConfig">
         <v-layer>
             <StickyNote
                 v-for="note in notes"

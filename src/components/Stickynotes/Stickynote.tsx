@@ -48,10 +48,10 @@ export const StickyNote = defineComponent({
         watch(
             () => props.selected,
             (sel) => {
-                if(sel && transformerRef.value && groupRef.value) {
+                if(sel && transformerRef.value && groupRef.value && typeof transformerRef.value.nodes === 'function') {
                     transformerRef.value.nodes([groupRef.value])
                     transformerRef.value.getLayer()?.batchDraw()
-                }else if(transformerRef.value) {
+                }else if(transformerRef.value && typeof transformerRef.value.nodes === 'function') {
                     transformerRef.value.nodes([]);
                 }
             },
@@ -103,12 +103,27 @@ export const StickyNote = defineComponent({
                     x: props.x,
                     y: props.y,
                     draggable: !isEditing.value,
+                    listening: true,
                     onDragstart: handleDragStart,
                     onDragend: handleDragEnd,
                     onDragmove: (e:any) => props.onDragMove?.(e),
                     onClick: props.onClick,
                     onTap: props.onClick,
-                    onTransformed: handleTransformEnd
+                    onTransformed: handleTransformEnd,
+                    onMouseEnter: (e: any) =>{
+                        const stage = e.target.getStage();
+                        if(stage) {
+                            stage.container().style.pointerEvents = 'auto';
+                            document.body.style.cursor = 'pointer';
+                        }
+                    },
+                    onMouseLeave: (e:any) => {
+                        const stage = e.target.getStage();
+                        if(stage) {
+                            stage.container().style.pointerEvents = 'none';
+                            document.body.style.cursor = 'default';
+                        }
+                    }
                 }}
                 >
                     <Rect config={{
