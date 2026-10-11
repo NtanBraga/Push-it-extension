@@ -110,20 +110,7 @@ export const StickyNote = defineComponent({
                     onClick: props.onClick,
                     onTap: props.onClick,
                     onTransformed: handleTransformEnd,
-                    onMouseEnter: (e: any) =>{
-                        const stage = e.target.getStage();
-                        if(stage) {
-                            stage.container().style.pointerEvents = 'auto';
-                            document.body.style.cursor = 'pointer';
-                        }
-                    },
-                    onMouseLeave: (e:any) => {
-                        const stage = e.target.getStage();
-                        if(stage) {
-                            stage.container().style.pointerEvents = 'none';
-                            document.body.style.cursor = 'default';
-                        }
-                    }
+
                 }}
                 >
                     <Rect config={{

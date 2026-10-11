@@ -42,14 +42,14 @@ const init = () => {
             position: fixed;
             inset: 0;
             z-index: 200;
-            pointer-event: none;
         }
         #push-it-app {
             width: 100%;
             height: 100%;
         }
-        .konvajs-content, konvajs-content canvas {
-            pointer-events: auto;
+        :host([data-page-locked="true"]) .konvajs-content,
+        :host([data-page-locked="true"]) .konvajs-content canvas {
+            pointer-events: auto !important;
         }
     `
 
@@ -70,17 +70,25 @@ const init = () => {
         host.style.display = enabled ? 'block' : 'none'
     }
 
-    chrome.storage.local.get({pushItEnabled: true}).then((data) => {
+    const setPageLocked = (locked: boolean) => {
+        host.style.pointerEvents = locked ? 'auto' : 'none'
+        host.setAttribute('data-page-locked', String(locked))
+    }
+
+    chrome.storage.local.get({pushItEnabled: true, pushItPageLocked: false}).then((data) => {
         setEnabled(data.pushItEnabled as boolean)
+        setPageLocked(data.pushItPageLocked as boolean)
     }).catch((e) => {
         console.error("Erro ao ler estado: ", e)
         setEnabled(true)
+        setPageLocked(false)
     })
 
     //alterações no popup
     chrome.storage.onChanged.addListener((changes, areaName) => {
         if(areaName !== 'local') return
         if(changes.pushItEnabled) setEnabled(changes.pushItEnabled.newValue === true)
+        if(changes.pushItPageLocked) setPageLocked(changes.pushItPageLocked.newValue === true)
     })
 
 };

@@ -2,9 +2,12 @@
 import { onMounted, ref } from 'vue'
 import iro from '@jaames/iro'
 
-
+//Extention button
 const isEnabledExtention = ref<boolean>(true)
 const isLoadingExtention = ref<boolean>(true)
+
+//Page button
+const isPageLocked = ref<boolean>(true) 
 
 const color = ref("#fef08a");
 const selectedFont = ref("Inter");
@@ -47,10 +50,24 @@ const toggleExtention = async () => {
   }
 }
 
+const togglePageLock = async () => {
+  const newValue = isPageLocked.value
+
+  try{
+    await chrome.storage.local.set({ pushItPageLocked: newValue})
+
+    console.log("A pagina está: ", newValue ? 'bloqueada' : 'desbloqueada')
+  }catch(e){
+    isPageLocked.value = !newValue
+    console.error("Erro ao alterar bloqueio: ", e)
+  }
+}
+
 onMounted(async () => {
   try{
-    const data = await chrome.storage.local.get({pushItEnabled: true})
+    const data = await chrome.storage.local.get({pushItEnabled: true, pushItPageLocked: false})
     isEnabledExtention.value = data.pushItEnabled as boolean
+    isPageLocked.value = data.pushItPageLocked as boolean
   }catch(e){
     console.error("Erro ao carregar estado: ", e)
   }finally{
@@ -83,7 +100,7 @@ onMounted(() => {
       <span>Ativar: </span>
       <div class="slide-checkbox">
           <label class="switch">
-              <input type="checkbox" v-model="isEnabledExtention" @change="toggleExtention" :disabled="isLoadingExtention">
+              <input class="checkbox" type="checkbox" v-model="isEnabledExtention" @change="toggleExtention" :disabled="isLoadingExtention">
               <span class="slider"></span>
           </label>
       </div>
@@ -113,7 +130,7 @@ onMounted(() => {
       <span>Bloquear página: </span>
       <div class="slide-checkbox">
           <label class="switch">
-              <input class="checkbox" type="checkbox">
+              <input class="checkbox" type="checkbox" v-model="isPageLocked" @change="togglePageLock" :disabled="!isEnabledExtention || isLoadingExtention">
               <span class="slider"></span>
           </label>
       </div>
