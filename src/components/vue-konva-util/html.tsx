@@ -38,27 +38,20 @@ export const Html = defineComponent({
         const handleTransform = () => {
             if(!konvaGroup) return
             
-            if(!props.transform) {
-                const transform = konvaGroup.getAbsoluteTransform()
-                let attrs = transform.decompose() as DecomposedTransform
+            const position = konvaGroup.getAbsolutePosition()
 
-                if(props.transformFunc) attrs = props.transformFunc(attrs)
-
-                Object.assign(div.style, {
-                    position: 'absolute',
-                    zIndex: '10',
-                    top: '0px',
-                    left: '0px',
-                    transform: `translate(${attrs.x}px, ${attrs.y}px) rotate(${attrs.rotation}deg) scaleX(${attrs.scaleX}) scaleY(${attrs.scaleY})`,
-                    transformOrigin: 'top left',
-                })
-            }
-
+            Object.assign(div.style, {
+                position: 'absolute',
+                zIndex: '10',
+                top: `${position.x}px`,
+                left: `${position.y}px`,
+                transform: 'none',
+                pointerEvent: 'auto'
+            })
             
-
             const { style, ...rest } = props.divProps as Record<string, any>
             if (style) Object.assign(div.style, style) 
-            Object.assign(div, rest)
+            Object.assign(div.style, rest)
         }
 
         onMounted(async () => {

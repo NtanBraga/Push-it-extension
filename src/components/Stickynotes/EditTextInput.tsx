@@ -57,7 +57,7 @@ export const EditTextInput = defineComponent({
             width: '100%',
             height: '100%',
             border: 'none',
-            padding: '4px 8px',
+            padding: '0',
             margin: '0',
             background: 'transparent',
             outline: 'none',
@@ -65,7 +65,7 @@ export const EditTextInput = defineComponent({
             color: 'black',
             fontSize: '24px',
             fontFamily: props.fontFamily || 'sans-serif',
-            lineHeight: '1.4',
+            lineHeight: '1.2',
             boxSizing: 'border-box' as const,
             caretColor: 'black',
         } as const
