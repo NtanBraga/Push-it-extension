@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import iro from '@jaames/iro'
 
 //Extention button
@@ -62,6 +62,27 @@ const togglePageLock = async () => {
     console.error("Erro ao alterar bloqueio: ", e)
   }
 }
+
+const handleStorageChanged = (
+  changes: {[key: string]: chrome.storage.StorageChange},
+  areaName: string
+) => {
+  if(areaName !== 'local') return
+
+  if(changes.pushItEnabled) {
+    isEnabledExtention.value = changes.pushItEnabled.newValue === true
+  }
+  if(changes.pushItPageLocked){
+    isPageLocked.value = changes.pushItPageLocked.newValue === true
+  }
+}
+
+onMounted(() => {
+  chrome.storage.onChanged.addListener(handleStorageChanged)
+})
+onUnmounted(() => {
+  chrome.storage.onChanged.removeListener(handleStorageChanged)
+})
 
 onMounted(async () => {
   try{

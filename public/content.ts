@@ -47,9 +47,9 @@ const init = () => {
             width: 100%;
             height: 100%;
         }
-        :host([data-page-locked="true"]) .konvajs-content,
-        :host([data-page-locked="true"]) .konvajs-content canvas {
-            pointer-events: auto !important;
+        :host([data-page-locked="false"]) #push-it-app,
+        :host([data-page-locked="false"]) #push-it-app * {
+            pointer-events: none !important;
         }
     `
 
@@ -71,8 +71,8 @@ const init = () => {
     }
 
     const setPageLocked = (locked: boolean) => {
+        host.dataset.pageLocked = String(locked)
         host.style.pointerEvents = locked ? 'auto' : 'none'
-        host.setAttribute('data-page-locked', String(locked))
     }
 
     chrome.storage.local.get({pushItEnabled: true, pushItPageLocked: false}).then((data) => {
