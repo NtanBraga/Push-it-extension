@@ -36,31 +36,20 @@ export const StickyNote = defineComponent({
         const MAX_HEIGHT = 900;
         const MIN_SIZE = 100;
 
-        watch(
-            () => props.selected,
-            (sel) => {
-                if(!sel && isEditing.value) {
-                    isEditing.value = false;
-                }
-            }
-        )
+        const stopEdit = () => {
+            if(!isEditing.value) return
 
-        watch(
-            () => props.selected,
-            (sel) => {
-                if(sel && transformerRef.value && groupRef.value && typeof transformerRef.value.nodes === 'function') {
-                    transformerRef.value.nodes([groupRef.value])
-                    transformerRef.value.getLayer()?.batchDraw()
-                }else if(transformerRef.value && typeof transformerRef.value.nodes === 'function') {
-                    transformerRef.value.nodes([]);
-                }
-            },
-            {immediate: true}
-        )
+            isEditing.value = false
+            props.OnTextClick(false)
+        }
         const toggleEdit = () => {
-            if(!isDragging.value) {
-                isEditing.value = !isEditing.value
-                props.OnTextClick(isEditing.value)
+            if(isDragging.value) return
+
+            if(isEditing.value) {
+                stopEdit()
+            }else{
+                isEditing.value = true
+                props.OnTextClick(true)
             }
         }
         const handleDragStart = () => {
@@ -96,6 +85,31 @@ export const StickyNote = defineComponent({
                 tr.getLayer()?.batchDraw()
             }
         }
+
+
+        watch(
+            () => props.selected,
+            (sel) => {
+                if(!sel) {
+                    stopEdit()
+                }
+            }
+        )
+
+        watch(
+            () => props.selected,
+            (sel) => {
+                if(sel && transformerRef.value && groupRef.value && typeof transformerRef.value.nodes === 'function') {
+                    transformerRef.value.nodes([groupRef.value])
+                    transformerRef.value.getLayer()?.batchDraw()
+                }else if(transformerRef.value && typeof transformerRef.value.nodes === 'function') {
+                    transformerRef.value.nodes([]);
+                }
+            },
+            {immediate: true}
+        )
+
+
         return () => (
             <>
                 <Group config={{
@@ -148,6 +162,7 @@ export const StickyNote = defineComponent({
                         fontColour={props.fontColour}
                         isEditing={isEditing.value}
                         onToggleEdit={toggleEdit}
+                        onEndEdit={stopEdit}
                         onChange={props.onTextChange}
                     />
                 </Group>

@@ -19,6 +19,7 @@ export const EditText = defineComponent({
         isEditing: { type: Boolean, required: true},
         onToggleEdit: { type: Function as PropType<() => void>, required: true},
         onChange:{ type: Function as PropType<(val: string) => void>, required: true },
+        onEndEdit: { type: Function as PropType<() => void>, required: true }
     },
 
     setup(props) {
@@ -43,6 +44,7 @@ export const EditText = defineComponent({
                         value={props.text}
                         onChange={handleTextChange}
                         onKeydown={handleEscapeKeys}
+                        onBlur={props.onEndEdit}
                     />
                 )
             }

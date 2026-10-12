@@ -43,15 +43,15 @@ export const Html = defineComponent({
             Object.assign(div.style, {
                 position: 'absolute',
                 zIndex: '10',
-                top: `${position.x}px`,
-                left: `${position.y}px`,
+                top: `${position.y}px`,
+                left: `${position.x}px`,
                 transform: 'none',
                 pointerEvent: 'auto'
             })
             
             const { style, ...rest } = props.divProps as Record<string, any>
             if (style) Object.assign(div.style, style) 
-            Object.assign(div.style, rest)
+            Object.assign(div, rest)
         }
 
         onMounted(async () => {
@@ -73,7 +73,7 @@ export const Html = defineComponent({
 
             parent.appendChild(div)
 
-            konvaGroup.on('absoluteTranformChange', handleTransform)
+            konvaGroup.on('absoluteTransformChange', handleTransform)
 
             handleTransform()
 
@@ -87,7 +87,7 @@ export const Html = defineComponent({
         )
 
         onUnmounted(() => {
-            konvaGroup?.off('absoluteTranformChange', handleTransform)
+            konvaGroup?.off('absoluteTransformChange', handleTransform)
             div.remove()
         })
         //teleport para enviar a div do modal para html

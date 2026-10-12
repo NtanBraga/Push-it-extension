@@ -52,7 +52,7 @@ onMounted(() => {
                 :key="note.id"
                 v-bind="note"
                 :selected="note.id === selectedId"
-                @onClick="() => selectedId = note.id"
+                :onClick="() => selectedId = note.id"
                 @text-change="(text) => note.text = text"
                 @resize="(w, h) => { note.width = w; note.height = h }"
                 @drag-end="(x, y) => { note.x = x; note.y = y }"

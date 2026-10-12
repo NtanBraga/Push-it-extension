@@ -14,6 +14,7 @@ export const EditTextInput = defineComponent({
         onChange: { type: Function as PropType<(val: string) => void>, required: true },
         onKeydown: { type: Function as PropType<(e: KeyboardEvent) => void>, default: () => {}},
         autoFocus: { type: Boolean, default: true},
+        onBlur: { type: Function as PropType<() => void>, required: true}
     },
 
     setup(props) {
@@ -89,6 +90,7 @@ export const EditTextInput = defineComponent({
                     value={props.value}
                     onInput={handleInput}
                     onKeydown={handleKeydown}
+                    onBlur={props.onBlur}
                     style={textareaStyle}
                 />
             </Html>
