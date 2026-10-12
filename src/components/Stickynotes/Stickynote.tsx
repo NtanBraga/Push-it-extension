@@ -40,15 +40,20 @@ export const StickyNote = defineComponent({
         const BASE_HEIGHT = 230
         const BASE_FONT_SIZE = 24
 
-        const fontSize = computed(() => {
-            const widthScale = props.width / BASE_WIDTH
-            const heightScale = props.height / BASE_HEIGHT
+        const calculateFontSize = (width: number, height: number) => {
+            const widthScale = width / BASE_WIDTH
+            const heightScale = height / BASE_HEIGHT
 
             const scale = Math.sqrt(widthScale * heightScale)
             const size = BASE_FONT_SIZE * scale
 
-            return Math.round(Math.max(12, Math.min(54, size)))
-        })
+            const clampedSize = Math.max(12, Math.min(54, size))
+
+            return Math.round(clampedSize * 10) / 10
+
+        }
+
+        const fontSize = computed(() => calculateFontSize(props.width, props.height))
 
         const stopEdit = () => {
             if(!isEditing.value) return
@@ -74,6 +79,35 @@ export const StickyNote = defineComponent({
             isDragging.value = false
             props.onDragEnd(e.target.x(), e.target.y())
         }
+        const handleTransform = () => {
+            const node = groupRef.value?.getNode?.()
+
+            if(!node) return
+
+            const scaleX = node.scaleX()
+            const scaleY = node.scaleY()
+
+            if(scaleX <= 0 || scaleY <= 0)return
+
+            const textNode = node.findOne('Text')
+
+            const newWidth = Math.round(Math.max(MIN_SIZE,Math.min(MAX_WIDTH,(props.width + 40) * scaleX - 40)))
+            const newHeight = Math.round(Math.max(MIN_SIZE, Math.min(MAX_HEIGHT,(props.height + 60) * scaleY - 60)))
+            
+            textNode.setAttrs({
+                x: 20 / scaleX,
+                y: 20 / scaleY,
+
+                scaleX: 1 / scaleX,
+                scaleY: 1 / scaleY,
+
+                width: newWidth,
+                height: newHeight + 40,
+
+                fontSize: calculateFontSize(newWidth, newHeight)
+            })
+
+        }
         const handleTransformEnd = () => {
             const node = groupRef.value?.getNode?.()
 
@@ -84,16 +118,29 @@ export const StickyNote = defineComponent({
 
             const newWidth = Math.round(Math.max(MIN_SIZE,Math.min(MAX_WIDTH,(props.width + 40) * scaleX - 40)))
             const newHeight = Math.round(Math.max(MIN_SIZE, Math.min(MAX_HEIGHT,(props.height + 60) * scaleY - 60)))
-        
-        
-            const newX = Math.round(node.x())
-            const newY = Math.round(node.y())
+            
+            const newX = node.x()
+            const newY = node.y()
+            const textNode = node.findOne('Text')
+
+            textNode?.setAttrs({
+                x:20,
+                y:20,
+
+                scaleX:1,
+                scaleY:1,
+
+                width: newWidth,
+                height: newHeight,
+
+                fontSize: calculateFontSize(newWidth, newHeight)
+            })
 
             node.scaleX(1)
             node.scaleY(1)
-        
-            props.onResize(newWidth, newHeight, newX, newY)
 
+            props.onResize(newWidth, newHeight, newX, newY)
+ 
             nextTick(() => {
                 const transformer = transformerRef.value?.getNode?.()
 
@@ -150,6 +197,7 @@ export const StickyNote = defineComponent({
                     onDragmove: (e:any) => props.onDragMove?.(e),
                     onClick: props.onClick,
                     onTap: props.onClick,
+                    onTransform: handleTransform,
                     onTransformend: handleTransformEnd,
 
                 }}
