@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { StickyNote } from './Stickynotes/Stickynote.tsx';
 import { ref, onMounted} from 'vue'
+import type Konva from 'konva'
 
 const notes = ref<any[]>([])
 const selectedId = ref<string | null>(null);
@@ -16,6 +17,11 @@ const stageConfig = ref({
     }
 })
 
+const handleStageMouseDown = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
+    if(e.target === e.target.getStage()){
+        selectedId.value = null
+    }
+}
 
 onMounted(() => {
 
@@ -45,7 +51,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <v-stage :config="stageConfig">
+    <v-stage :config="stageConfig" @mousedown="handleStageMouseDown" @touchstart="handleStageMouseDown">
         <v-layer>
             <StickyNote
                 v-for="note in notes"
@@ -54,7 +60,7 @@ onMounted(() => {
                 :selected="note.id === selectedId"
                 :onClick="() => selectedId = note.id"
                 @text-change="(text) => note.text = text"
-                @resize="(w, h) => { note.width = w; note.height = h }"
+                @resize="(w, h, x, y) => { note.width = w; note.height = h; note.x = x; note.y = y }"
                 @drag-end="(x, y) => { note.x = x; note.y = y }"
             />
         </v-layer>

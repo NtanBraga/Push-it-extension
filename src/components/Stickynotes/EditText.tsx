@@ -14,6 +14,7 @@ export const EditText = defineComponent({
         text: { type: String, default: ''},
         fontColour: { type: String, default: 'black'},
         fontFamily: { type: String, default: 'sans-serif'},
+        fontSize: { type: Number, default: 24 },
         width: { type: Number, required: true },
         height: { type: Number, required: true},
         isEditing: { type: Boolean, required: true},
@@ -40,6 +41,7 @@ export const EditText = defineComponent({
                         y={props.y}
                         width={props.width}
                         height={props.height}
+                        fontSize={props.fontSize}
                         fontFamily={props.fontFamily}
                         value={props.text}
                         onChange={handleTextChange}
@@ -56,6 +58,7 @@ export const EditText = defineComponent({
                     height={props.height}
                     text={props.text}
                     fontColour={props.fontColour}
+                    fontSize={props.fontSize}
                     onDoubleClick={props.onToggleEdit}
                 />
             )

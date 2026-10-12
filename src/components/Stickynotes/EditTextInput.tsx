@@ -10,6 +10,7 @@ export const EditTextInput = defineComponent({
         width: { type: Number, required: true},
         height: { type: Number, required: true},
         fontFamily: { type: String, required: true},
+        fontSize: { type:Number, default:24 },
         value: { type: String, default: ''},
         onChange: { type: Function as PropType<(val: string) => void>, required: true },
         onKeydown: { type: Function as PropType<(e: KeyboardEvent) => void>, default: () => {}},
@@ -91,7 +92,7 @@ export const EditTextInput = defineComponent({
                     onInput={handleInput}
                     onKeydown={handleKeydown}
                     onBlur={props.onBlur}
-                    style={textareaStyle}
+                    style={{...textareaStyle, fontSize: `${props.fontSize}px`}}
                 />
             </Html>
         )

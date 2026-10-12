@@ -1,4 +1,4 @@
-import { defineComponent, type PropType, ref, shallowRef, watch } from "vue";
+import { defineComponent, type PropType, ref, shallowRef, watch, nextTick, computed } from "vue";
 import { Group, Rect, Transformer } from "vue-konva";
 import { EditText } from "./EditText";
 
@@ -19,7 +19,7 @@ export const StickyNote = defineComponent({
         onClick: { type: Function as PropType<(e: any) => void>, default: () => {} },
         onTextChange: { type: Function as PropType<(newText: string) => void>, required: true},
         OnTextClick: { type: Function as PropType<(editing: boolean) => void>, default: () => {} },
-        onResize: { type: Function as PropType<(w: number, h: number) => void>, required: true },
+        onResize: { type: Function as PropType<(w: number, h: number , x: number, y: number) => void>, required: true },
         onDragEnd: { type: Function as PropType<(newX: number, newY: number) => void>, required: true},
         onDragMove: { type: Function as PropType<(e: any) => void>, default: () => {} },
         idConnect: { type: Array, default: () => [] },
@@ -35,6 +35,20 @@ export const StickyNote = defineComponent({
         const MAX_WIDTH = 1000;
         const MAX_HEIGHT = 900;
         const MIN_SIZE = 100;
+
+        const BASE_WIDTH = 250
+        const BASE_HEIGHT = 230
+        const BASE_FONT_SIZE = 24
+
+        const fontSize = computed(() => {
+            const widthScale = props.width / BASE_WIDTH
+            const heightScale = props.height / BASE_HEIGHT
+
+            const scale = Math.sqrt(widthScale * heightScale)
+            const size = BASE_FONT_SIZE * scale
+
+            return Math.round(Math.max(12, Math.min(54, size)))
+        })
 
         const stopEdit = () => {
             if(!isEditing.value) return
@@ -61,29 +75,31 @@ export const StickyNote = defineComponent({
             props.onDragEnd(e.target.x(), e.target.y())
         }
         const handleTransformEnd = () => {
-            if(!groupRef.value) return;
+            const node = groupRef.value?.getNode?.()
 
-            const node = groupRef.value
-            const tr = transformerRef.value
+            if(!node) return
 
             const scaleX = node.scaleX()
             const scaleY = node.scaleY()
 
+            const newWidth = Math.round(Math.max(MIN_SIZE,Math.min(MAX_WIDTH,(props.width + 40) * scaleX - 40)))
+            const newHeight = Math.round(Math.max(MIN_SIZE, Math.min(MAX_HEIGHT,(props.height + 60) * scaleY - 60)))
+        
+        
+            const newX = Math.round(node.x())
+            const newY = Math.round(node.y())
+
             node.scaleX(1)
             node.scaleY(1)
+        
+            props.onResize(newWidth, newHeight, newX, newY)
 
-            let newWidth = Math.max(MIN_SIZE, Math.min(MAX_WIDTH, props.width * scaleX))
-            let newHeight = Math.max(MIN_SIZE, Math.min(MAX_HEIGHT, props.height * scaleY))
+            nextTick(() => {
+                const transformer = transformerRef.value?.getNode?.()
 
-            newWidth = Math.round(newWidth)
-            newHeight = Math.round(newHeight)
-
-            props.onResize(newWidth, newHeight)
-
-            if(tr) {
-                tr.nodes([node])
-                tr.getLayer()?.batchDraw()
-            }
+                transformer?.forceUpdate()
+                transformer?.getLayer()?.batchDraw()
+            })
         }
 
 
@@ -97,23 +113,34 @@ export const StickyNote = defineComponent({
         )
 
         watch(
-            () => props.selected,
-            (sel) => {
-                if(sel && transformerRef.value && groupRef.value && typeof transformerRef.value.nodes === 'function') {
-                    transformerRef.value.nodes([groupRef.value])
-                    transformerRef.value.getLayer()?.batchDraw()
-                }else if(transformerRef.value && typeof transformerRef.value.nodes === 'function') {
-                    transformerRef.value.nodes([]);
+            [() => props.selected, isEditing],
+
+            async([selected, editing]) => {
+                await nextTick()
+
+                const group = groupRef.value?.getNode?.()
+                const transformer = transformerRef.value?.getNode?.()
+
+                if(!transformer) return
+                
+                if(selected && !editing && group){
+                    transformer.nodes([group])
+                }else{
+                    transformer.nodes([])
                 }
-            },
-            {immediate: true}
+
+                transformer.getLayer()?.batchDraw()
+            },{
+                immediate: true,
+                flush: 'post'
+            }
         )
 
 
         return () => (
             <>
-                <Group config={{
-                    ref: groupRef,
+                <Group ref = {groupRef} config={{
+                    
                     x: props.x,
                     y: props.y,
                     draggable: !isEditing.value,
@@ -123,7 +150,7 @@ export const StickyNote = defineComponent({
                     onDragmove: (e:any) => props.onDragMove?.(e),
                     onClick: props.onClick,
                     onTap: props.onClick,
-                    onTransformed: handleTransformEnd,
+                    onTransformend: handleTransformEnd,
 
                 }}
                 >
@@ -160,6 +187,7 @@ export const StickyNote = defineComponent({
                         text={props.text}
                         fontFamily={props.fontFamily}
                         fontColour={props.fontColour}
+                        fontSize={fontSize.value}
                         isEditing={isEditing.value}
                         onToggleEdit={toggleEdit}
                         onEndEdit={stopEdit}
@@ -170,13 +198,21 @@ export const StickyNote = defineComponent({
                     <Transformer
                         ref={transformerRef}
                         config={{
+                            rotateEnabled: false,
+                            flipEnabled: false,
+                            keepRatio: false,
+
                             boundBoxFunc: (oldBox: any, newBox: any) => {
-                                if(newBox.width < MIN_SIZE || newBox.height < MIN_SIZE){
+                                if(
+                                    newBox.width < MIN_SIZE + 40 ||
+                                    newBox.height < MIN_SIZE + 60 ||
+                                    newBox.width > MAX_WIDTH + 40 ||
+                                    newBox.height > MAX_HEIGHT +60
+                                ){
                                     return oldBox
                                 }
                                 return newBox
-                            },
-                            rotateEnabled: false,
+                            }
                         }}
                     />
                 )}
